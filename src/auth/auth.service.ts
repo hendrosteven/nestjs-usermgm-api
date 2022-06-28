@@ -6,6 +6,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { SigninDto } from './dto/signin.dto';
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import * as nodemailer from 'nodemailer';
 
 @Injectable({})
 export class AuthService {
@@ -27,6 +28,8 @@ export class AuthService {
                 }
             });
             delete user.hash;
+            //send email
+            this.sendEmail(user.id, dto.fullName, dto.email);
             //return saved user
             return user;
         } catch (error) {
@@ -55,12 +58,12 @@ export class AuthService {
         //if password incorrect throw excption
         if (!pwdMatches) throw new ForbiddenException('Credentials incorrect');
         //if unverified 
-        if(!user.verified) throw new ForbiddenException('Unverified user');
+        if (!user.verified) throw new ForbiddenException('Unverified user');
         //send back valid token
         return this.signToken(user.id, user.email);
     }
 
-    async signToken(userId: number, email: string): Promise<{ access_token: string }> {
+    async signToken(userId: string, email: string): Promise<{ access_token: string }> {
         const payload = {
             sub: userId,
             email
@@ -75,5 +78,34 @@ export class AuthService {
         return {
             'access_token': token,
         }
+    }
+
+    async sendEmail(userId: string, name: string, email: string) {
+        const hostname = this.config.get('HOSTNAME');
+        const username = this.config.get('USERNAME');
+        const password = this.config.get('PASSWORD');
+
+        const transporter = nodemailer.createTransport({
+            host: hostname,
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+                user: username,
+                pass: password,
+            },
+            logger: true
+        });
+
+        // send mail with defined transport object
+        const info = await transporter.sendMail({
+            from: '"Register" <info@domain.com>',
+            to: email,
+            subject: "Please Verified Your Email",
+            html: "Hello "+name+" please click <a href='http://google.com'>verify my email address</a> to activate you account",
+            headers: { 'x-myheader': 'test header' }
+        });
+
+        console.log("Message sent: %s", info.response);
     }
 }

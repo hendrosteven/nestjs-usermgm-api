@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty, IsString, Matches } from "class-validator";
 import { Match } from './match.decorator'
 
-export class AuthDto {
+export class SignupDto {
 
     @IsEmail()
     @IsNotEmpty()

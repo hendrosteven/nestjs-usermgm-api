@@ -7,22 +7,5 @@ import { PrismaService } from './prisma.service';
   providers: [PrismaService],
   exports: [PrismaService]
 })
-export class PrismaModule extends PrismaClient{
+export class PrismaModule {}
 
-    constructor() {
-        super({
-            datasources: {
-                db: {
-                    url: 'postgresql://postgres:12345@localhost:5434/users?schema=public',
-                },
-            },
-        });
-    }
-
-    cleanDb() {
-        return this.$transaction([
-            this.session.deleteMany(),
-            this.user.deleteMany()
-        ]);
-    }
-}

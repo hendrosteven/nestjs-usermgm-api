@@ -21,6 +21,8 @@ model User {
 
   fullName String?
 
+  verified Boolean
+
   sessions Session[]
 
   @@map("users")

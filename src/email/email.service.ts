@@ -12,6 +12,8 @@ export class EmailService {
         const username = this.config.get('USERNAME');
         const password = this.config.get('PASSWORD');
         const port = this.config.get('PORT');
+        const domain = this.config.get('DOMAIN');
+        const path = domain +"/"+userId;
 
         const transporter = nodemailer.createTransport({
             host: hostname,
@@ -30,7 +32,7 @@ export class EmailService {
             from: '"Register" <info@domain.com>',
             to: email,
             subject: "Please Verify Your Email",
-            html: "Hello "+name+" please click <a href='http://google.com'>verify my email address</a> to activate you account",
+            html: "Hello "+name+" please click <a href='"+path+"'>verify my email address</a> to activate you account",
             headers: { 'x-myheader': 'test header' }
         });
 

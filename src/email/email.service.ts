@@ -11,10 +11,11 @@ export class EmailService {
         const hostname = this.config.get('HOSTNAME');
         const username = this.config.get('USERNAME');
         const password = this.config.get('PASSWORD');
+        const port = this.config.get('PORT');
 
         const transporter = nodemailer.createTransport({
             host: hostname,
-            port: 587,
+            port: port,
             secure: false,
             requireTLS: true,
             auth: {

@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PrismaService } from '../prisma/prisma.service';
 import { SignupDto } from './dto/signup.dto';
 import * as argon from 'argon2';
@@ -6,7 +6,6 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { SigninDto } from './dto/signin.dto';
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import * as nodemailer from 'nodemailer';
 import { EmailService } from "src/email/email.service";
 
 @Injectable({})
@@ -81,5 +80,34 @@ export class AuthService {
         }
     }
 
-  
+    async verify(userId: string) {
+        try {
+            //find user by email
+            const user = await this.prisma.user.update({
+                where: {
+                    id: userId,
+                },
+                data: {
+                    verified: true
+                }
+            });
+            //if user not exist throw exception
+            if (!user) throw new ForbiddenException('User not found')
+            //send back valid token
+            return this.signToken(user.id, user.email);
+        } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+                console.log(error.code);
+                if (error.code === 'P2025') { //id not found
+                    throw new HttpException({
+                        status: HttpStatus.BAD_REQUEST,
+                        error: "User not found"
+                    }, HttpStatus.BAD_REQUEST);
+                }
+            } else {
+                throw error;
+            }
+        }
+    }
+
 }

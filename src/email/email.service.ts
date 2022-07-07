@@ -8,12 +8,12 @@ export class EmailService {
     constructor(private config: ConfigService) { }
 
     async sendEmail(userId: string, name: string, email: string) {
-        const hostname = this.config.get('HOSTNAME');
-        const username = this.config.get('USERNAME');
-        const password = this.config.get('PASSWORD');
-        const port = this.config.get('PORT');
-        const domain = this.config.get('DOMAIN');
-        const path = domain +"/"+userId;
+        const port = Number(process.env.MAILGUN_SMTP_PORT || this.config.get('PORT'));
+        const hostname = process.env.MAILGUN_SMTP_SERVER || this.config.get('HOSTNAME');        
+        const username = process.env.MAILGUN_SMTP_LOGIN || this.config.get('USERNAME');
+        const password = process.env.MAILGUN_SMTP_PASSWORD || this.config.get('PASSWORD');        
+        const domain = this.config.get('DOMAIN') || 'user-app-api.herokuapp.com';
+        const path = domain +"/auth/verify/"+userId;
 
         const transporter = nodemailer.createTransport({
             host: hostname,

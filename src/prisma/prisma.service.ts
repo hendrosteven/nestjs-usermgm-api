@@ -9,7 +9,7 @@ export class PrismaService extends PrismaClient {
         super({
             datasources: {
                 db: {
-                    url: config.get('DATABASE_URL'),
+                    url: process.env.MAILGUN_SMTP_SERVER != null ? config.get('DATABASE_URL_HEROKU') : config.get('DATABASE_URL'),
                 },
             },
         });

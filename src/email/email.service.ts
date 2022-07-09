@@ -12,9 +12,9 @@ export class EmailService {
         const hostname = process.env.MAILGUN_SMTP_SERVER || this.config.get('HOSTNAME');        
         const username = process.env.MAILGUN_SMTP_LOGIN || this.config.get('USERNAME');
         const password = process.env.MAILGUN_SMTP_PASSWORD || this.config.get('PASSWORD');        
-        const domain = 'https://user-app-api.herokuapp.com' || this.config.get('DOMAIN') ;
-        const path = domain +"/auth/verify/"+userId;
-
+        const domain = process.env.MAILGUN_SMTP_SERVER != null ? 'https://user-app-api.herokuapp.com/auth/verify/' : this.config.get('DOMAIN') ;
+        const path = domain + userId;
+ 
         const transporter = nodemailer.createTransport({
             host: hostname,
             port: port,

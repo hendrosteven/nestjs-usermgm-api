@@ -60,10 +60,10 @@ export class AuthService {
         //if unverified 
         if (!user.verified) throw new ForbiddenException(['Please check your email to activate your account or click on resend activation link below']);
         //send back valid token
-        return this.signToken(user.id, user.email);
+        return this.signToken(user.id, user.email, user.fullName);
     }
 
-    async signToken(userId: string, email: string): Promise<{ access_token: string }> {
+    async signToken(userId: string, email: string, fullName: string): Promise<{ fullName:string, access_token: string }> {
         const payload = {
             sub: userId,
             email
@@ -76,6 +76,7 @@ export class AuthService {
         });
 
         return {
+            'fullName': fullName,
             'access_token': token,
         }
     }
@@ -94,7 +95,7 @@ export class AuthService {
             //if user not exist throw exception
             if (!user) throw new ForbiddenException('User not found')
             //send back valid token
-            return this.signToken(user.id, user.email);
+            return this.signToken(user.id, user.email, user.fullName);
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 console.log(error.code);

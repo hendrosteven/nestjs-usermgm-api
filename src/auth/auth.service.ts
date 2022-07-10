@@ -35,7 +35,7 @@ export class AuthService {
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 if (error.code === 'P2002') { //duplicate error
-                    throw new ForbiddenException('Email already taken');
+                    throw new ForbiddenException(['Email already taken']);
                 }
             } else {
                 throw error;
@@ -51,14 +51,14 @@ export class AuthService {
             }
         });
         //if user not exist throw exception
-        if (!user) throw new ForbiddenException('Credentials incorrect')
+        if (!user) throw new ForbiddenException(['Invalid email or password'])
 
         //compare password
         const pwdMatches = await argon.verify(user.hash, dto.password);
         //if password incorrect throw excption
-        if (!pwdMatches) throw new ForbiddenException('Credentials incorrect');
+        if (!pwdMatches) throw new ForbiddenException(['Invalid email or password']);
         //if unverified 
-        if (!user.verified) throw new ForbiddenException('Unverified user');
+        if (!user.verified) throw new ForbiddenException(['Please check your email to activate your account or click on resend activation link below']);
         //send back valid token
         return this.signToken(user.id, user.email);
     }

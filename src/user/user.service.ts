@@ -34,7 +34,7 @@ export class UserService {
         //if password incorrect throw excption
         if (!pwdMatches) throw new HttpException({
             statusCode: HttpStatus.BAD_REQUEST,
-            message:['Old Password Incorrect'],
+            message:['Invalid Current Password'],
             error: "Bad Request"
         }, HttpStatus.BAD_REQUEST);
 

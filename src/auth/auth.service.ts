@@ -7,9 +7,11 @@ import { SigninDto } from './dto/signin.dto';
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { EmailService } from "src/email/email.service";
+import { ResendDto } from "./dto/resend.dto";
 
 @Injectable({})
 export class AuthService {
+
 
     constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService, private emailService: EmailService) { }
 
@@ -63,7 +65,7 @@ export class AuthService {
         return this.signToken(user.id, user.email, user.fullName);
     }
 
-    async signToken(userId: string, email: string, fullName: string): Promise<{ fullName:string, access_token: string }> {
+    async signToken(userId: string, email: string, fullName: string): Promise<{ fullName: string, access_token: string }> {
         const payload = {
             sub: userId,
             email
@@ -93,7 +95,7 @@ export class AuthService {
                 }
             });
             //if user not exist throw exception
-            if (!user) throw new ForbiddenException('User not found')
+            if (!user) throw new ForbiddenException(['User not found'])
             //send back valid token
             return this.signToken(user.id, user.email, user.fullName);
         } catch (error) {
@@ -108,6 +110,25 @@ export class AuthService {
             } else {
                 throw error;
             }
+        }
+    }
+
+    async resend(dto: ResendDto) {
+        //find user by email
+        const user = await this.prisma.user.findUnique({
+            where: {
+                email: dto.email,
+            }
+        });
+        //if user not exist throw exception
+        if (!user) throw new ForbiddenException(['User not found'])
+        //if verified 
+        if (user.verified) throw new ForbiddenException(['Your account already activated, please login']);
+        //send email
+        this.emailService.sendEmail(user.id, user.fullName, user.email);
+        return {
+            statusCode: HttpStatus.OK,
+            message:['Please check your email to activate your account'],
         }
     }
 

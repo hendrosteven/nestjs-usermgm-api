@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from "@nestjs/common";
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto';
+import { ResendDto } from "./dto/resend.dto";
 import { SigninDto } from './dto/signin.dto';
 
 
@@ -23,5 +24,10 @@ export class AuthController{
     @Get('/verify/:id')
     verify(@Param('id') userId: string){
         return this.authService.verify(userId);
+    }
+
+    @Post('resend')
+    resend(@Body() dto: ResendDto){
+        return this.authService.resend(dto);
     }
 }

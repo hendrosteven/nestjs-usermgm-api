@@ -117,6 +117,7 @@ export class AuthService {
             return this.signToken(user.id, user.email, user.fullName, ++user.numberOfLogin);
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
+                console.log(error.code);
                 if (error.code === 'P2025') { //id not found
                     throw new HttpException({
                         status: HttpStatus.BAD_REQUEST,

@@ -2,6 +2,9 @@ import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nest
 import { PrismaService } from '../prisma/prisma.service';
 import { EditNameDto, EditPasswordDto } from './dto';
 import * as argon from 'argon2';
+import { User } from './dto/user.dto';
+import { networkInterfaces } from 'os';
+import { Statistic } from './dto/statistic.dto';
 
 @Injectable()
 export class UserService {
@@ -51,6 +54,94 @@ export class UserService {
         });
         delete updatedUser.hash;
         return updatedUser;
+    }
+
+    async createSession(_userId: string, _sessionId: string){
+         //save session
+         try {
+            const session = await this.prisma.session.create({
+                data: {
+                    sessionId: _sessionId,
+                    userId: _userId
+                }
+            });           
+        } catch (error) {
+            throw error;
+        }
+    
+    }
+
+    async findAllUsers(){
+        const users = await this.prisma.user.findMany({
+            include:{
+                sessions:{
+                    orderBy:{
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
+        const userList : User[] = [];
+        users.forEach((user) =>{
+            const temp: User = new User();
+            temp.fullName= user.fullName;
+            temp.email = user.email;
+            temp.signUpDate = user.createdAt;
+            temp.numberOfLogin = user.numberOfLogin;
+            temp.lastSession = user.sessions.length>0 ? user.sessions[0] : null;
+            userList.push(temp);
+        });
+        return userList;
+    }
+
+    async countTotalUser(){
+        const totalUser = await this.prisma.user.aggregate({
+            _count:{
+                id: true
+            }
+        })
+        return totalUser._count.id;
+    }
+
+    async countSessionToday(){
+        const end = new Date(Date.now());
+        const begin = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) 
+        const sessionToday = await this.prisma.session.aggregate({
+            _count:{
+                id: true
+            },
+            where: {
+                createdAt: {
+                    gte: begin,
+                    lt: end
+                },
+
+            }
+        })
+        return sessionToday._count.id
+    }
+
+    async countSessionThisWeek(){
+        const sevenDaysAgo: Date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)  
+        const sessionThisWeek = await this.prisma.session.aggregate({
+            _count:{
+                id: true
+            },
+            where: {
+                createdAt: {
+                    gte: sevenDaysAgo
+                }
+            }
+        })
+        return sessionThisWeek._count.id;
+    }
+
+    async getStatistic(){
+        const statistic: Statistic = new Statistic();
+        statistic.totalUsers = await this.countTotalUser();
+        statistic.totalSessionToday = await this.countSessionToday();
+        statistic.totalSessionThisWeek = await this.countSessionThisWeek()/7;
+        return statistic;
     }
 
 }

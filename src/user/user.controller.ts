@@ -13,6 +13,7 @@ export class UserController {
 
     @Get('profile')
     profile(@GetUser() user: User){
+        console.log(user);
         return user;
     }
 

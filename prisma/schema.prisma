@@ -23,6 +23,8 @@ model User {
 
   verified Boolean
 
+  numberOfLogin Int @default(0)
+
   sessions Session[]
 
   @@map("users")

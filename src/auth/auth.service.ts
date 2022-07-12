@@ -8,6 +8,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { EmailService } from "src/email/email.service";
 import { ResendDto } from "./dto/resend.dto";
+import { User } from "@prisma/client";
 
 @Injectable({})
 export class AuthService {
@@ -62,10 +63,23 @@ export class AuthService {
         //if unverified 
         if (!user.verified) throw new ForbiddenException(['Please check your email to activate your account or click on resend activation link below']);
         //send back valid token
-        return this.signToken(user.id, user.email, user.fullName);
+        return this.signToken(user.id, user.email, user.fullName, ++user.numberOfLogin);
     }
 
-    async signToken(userId: string, email: string, fullName: string): Promise<{ fullName: string, access_token: string }> {
+    async increaseNumberOfLogin(userId: string, _numberOfLogin){
+        
+        const user = await this.prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                numberOfLogin: _numberOfLogin
+            }
+        });
+
+    }
+
+    async signToken(userId: string, email: string, fullName: string, numberOfLogin: number): Promise<{ fullName: string, access_token: string }> {
         const payload = {
             sub: userId,
             email
@@ -76,6 +90,9 @@ export class AuthService {
             expiresIn: '60m',
             secret: secret,
         });
+
+         //update numberOfLogin
+         this.increaseNumberOfLogin(userId, numberOfLogin);
 
         return {
             'fullName': fullName,
@@ -97,7 +114,7 @@ export class AuthService {
             //if user not exist throw exception
             if (!user) throw new ForbiddenException(['User not found'])
             //send back valid token
-            return this.signToken(user.id, user.email, user.fullName);
+            return this.signToken(user.id, user.email, user.fullName, ++user.numberOfLogin);
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 console.log(error.code);

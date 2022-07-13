@@ -9,6 +9,7 @@ import { ConfigService } from "@nestjs/config";
 import { EmailService } from "src/email/email.service";
 import { ResendDto } from "./dto/resend.dto";
 import { User } from "@prisma/client";
+import { SocialSigninDto } from './dto/social-signin.dto';
 
 @Injectable({})
 export class AuthService {
@@ -62,6 +63,33 @@ export class AuthService {
         if (!pwdMatches) throw new ForbiddenException(['Invalid email or password']);
         //if unverified 
         if (!user.verified) throw new ForbiddenException(['Please check your email to activate your account or click on resend activation link below']);
+        //send back valid token
+        return this.signToken(user.id, user.email, user.fullName, ++user.numberOfLogin);
+    }
+
+    async socialSignin(dto: SocialSigninDto) {
+       
+        //find user by email
+        const currentUser = await this.prisma.user.findUnique({
+            where: {
+                email: dto.email
+            }            
+        });
+        //if user exist throw exception
+        if (currentUser && currentUser.source=='email') throw new ForbiddenException(['Your email already registered, please login with you email'])
+
+        //if user not exist create it
+        let user = currentUser;
+        if (!currentUser){
+            user = await this.prisma.user.create({
+                data: {
+                    email: dto.email,                  
+                    source: dto.provider,
+                    fullName: dto.fullName,
+                    verified: true
+                }
+            });
+        }
         //send back valid token
         return this.signToken(user.id, user.email, user.fullName, ++user.numberOfLogin);
     }

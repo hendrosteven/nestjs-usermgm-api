@@ -76,7 +76,7 @@ export class AuthService {
             }            
         });
         //if user exist throw exception
-        if (currentUser && currentUser.source=='email') throw new ForbiddenException(['Your email already registered, please login with you email'])
+        if (currentUser && currentUser.source=='email') throw new ForbiddenException(['Your email already registered, please login with your email'])
 
         //if user not exist create it
         let user = currentUser;

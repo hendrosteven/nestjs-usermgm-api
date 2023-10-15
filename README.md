@@ -13,10 +13,10 @@
 ![enter image description here](https://github.com/hendrosteven/nestjs-usermgm-api/blob/master/screenshot2.png)
 
 **Demo Web**
-https://user-app-ui.herokuapp.com
+https://user-app-web-c23fe74ae6a1.herokuapp.com
 
 **API Documentation**
-http://user-app-api.herokuapp.com/docs
+https://user-app-api-da3f078983d0.herokuapp.com/docs
 
 **Frontend Repo**
 https://github.com/hendrosteven/nestjs-usermgm-ui
